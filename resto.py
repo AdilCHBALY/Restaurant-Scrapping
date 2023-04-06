@@ -2,6 +2,7 @@ import requests
 import json
 import base64
 from bs4 import BeautifulSoup 
+import re
 
 # MAIN WEBSITE TO GET ALL RESTAURANTS IN ALL MORROCAN CITIES
 # url = "https://www.tripadvisor.com/Restaurants-g293730-Morocco.html"
@@ -11,6 +12,16 @@ from bs4 import BeautifulSoup
 # response = requests.get(url, headers={'User-Agent': "Mozilla/5.0"})
 # soup = BeautifulSoup(response.text, 'html.parser')
 
+def get_long_lat(url):
+    # Extract latitude and longitude from URL using regular expressions
+    pattern = r'@(-?\d+\.\d+),(-?\d+\.\d+)'
+    match = re.search(pattern, url)
+    if match:
+        latitude = float(match.group(1))
+        longitude = float(match.group(2))
+        return latitude,longitude
+    else:
+        return 0,0
 
 #Get a Single Restaurant Data 
 def get_restaurant_data(url):
@@ -58,13 +69,16 @@ def get_restaurant_data(url):
         decoded_str = base64.b64decode(encoded_str).decode('utf-8')
     else : 
         decoded_str = 'N/A'
+    
+    lat,long=get_long_lat(decoded_str[4:])
 
     restaurant_details = {
         'name': restaurant_name,
         'review' : review,
         'rating' : rating,
         'img':imgs,
-        'googleMap_link':decoded_str[4:],
+        'long':long,
+        'lat':lat,
         'details' : details_list,
         'address':address,
         'status':status,
