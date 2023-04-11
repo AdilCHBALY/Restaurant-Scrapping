@@ -3,6 +3,7 @@ import json
 import base64
 from bs4 import BeautifulSoup 
 import re
+from uuid import uuid4
 
 # MAIN WEBSITE TO GET ALL RESTAURANTS IN ALL MORROCAN CITIES
 # url = "https://www.tripadvisor.com/Restaurants-g293730-Morocco.html"
@@ -11,6 +12,7 @@ import re
 # url='https://www.tripadvisor.com/Restaurants-g293734-Marrakech_Marrakech_Safi.html'
 # response = requests.get(url, headers={'User-Agent': "Mozilla/5.0"})
 # soup = BeautifulSoup(response.text, 'html.parser')
+
 
 def get_long_lat(url):
     # Extract latitude and longitude from URL using regular expressions
@@ -30,6 +32,10 @@ def get_restaurant_data(url):
 
     details_list=[]
     imgs=[]
+    if soup.find('a',class_='dlMOJ') is not None:
+        restaurant_pricing_rate = soup.find('a',class_='dlMOJ').text
+    else :
+        restaurant_pricing_rate = 'N/A'
     if soup.find('h1',class_='HjBfq') is not None:
         restaurant_name = soup.find('h1',class_='HjBfq').text
     else : 
@@ -45,8 +51,10 @@ def get_restaurant_data(url):
         rating = 'N/A'
     details=soup.find_all('div',class_='SrqKb')
     if details :
-        for detail in details :
+        for detail in details : 
             details_list.append(detail.text)
+    while len(details_list) < 3 :
+        details_list.append('N/A')
     if soup.find('span',class_='yEWoV') is not None :
         address=soup.find('span',class_='yEWoV').text
     else :
@@ -73,12 +81,14 @@ def get_restaurant_data(url):
     lat,long=get_long_lat(decoded_str[4:])
 
     restaurant_details = {
+        'id':str(uuid4()),
         'name': restaurant_name,
         'review' : review,
         'rating' : rating,
         'img':imgs,
         'long':long,
         'lat':lat,
+        'pricing' : restaurant_pricing_rate,
         'details' : details_list,
         'address':address,
         'status':status,
@@ -102,7 +112,7 @@ def fetch_single_page(url):
             single_restaurant = {}
             single_restaurant = get_restaurant_data(single_restaurant_link)
             all_city_restaurant.append(single_restaurant)
-    url = "https://www.tripadvisor.com"+soup.find('a',class_="nav next rndBtn ui_button primary taLnk")['href']
+    #url = "https://www.tripadvisor.com"+soup.find('a',class_="nav next rndBtn ui_button primary taLnk")['href']
     return all_city_restaurant
     
 
@@ -115,16 +125,19 @@ def get_restaurants():
     soup = BeautifulSoup(response.text, 'html.parser')
     cities = soup.find_all('div', class_='geo_wrap')
     data = []
+    i=1
     for city in cities:
         name = city.find('div', class_='geo_name')
         link = "https://www.tripadvisor.com"+name.find('a')['href']
         print("Fetching From " + name.text.strip())
         all_restaurants_data = fetch_single_page(link)
         restaurant_dict={
+            'id':i,
             'name' : name.text.strip(),
             'restaurants':all_restaurants_data
         }
         data.append(restaurant_dict)
+        i=i+1
     
 
     with open("./restaurants.json","w") as outfile :
