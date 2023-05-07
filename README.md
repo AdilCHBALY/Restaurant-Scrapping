@@ -7,6 +7,12 @@ Null Element are referenced with 'N/A'
 
 You can add in the Database by running the SqlHandler.py file
 
+## Related
+
+Here are some related projects
+
+[FrontEnd](https://github.com/AdilCHBALY/Restaurant_frontend)
+[BackEnd](https://github.com/AdilCHBALY/Restaurant_API)
 
 ## Tech Stack
 
