@@ -112,6 +112,7 @@ def fetch_single_page(url):
             single_restaurant = {}
             single_restaurant = get_restaurant_data(single_restaurant_link)
             all_city_restaurant.append(single_restaurant)
+    #You can add 60-90-120 Restaurant By Removing this code and adding a for loop for it 
     #url = "https://www.tripadvisor.com"+soup.find('a',class_="nav next rndBtn ui_button primary taLnk")['href']
     return all_city_restaurant
     
